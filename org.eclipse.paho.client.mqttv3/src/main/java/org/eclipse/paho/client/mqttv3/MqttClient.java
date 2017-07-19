@@ -20,6 +20,7 @@ import java.util.Properties;
 
 import javax.net.SocketFactory;
 
+import org.eclipse.paho.client.mqttv3.internal.ClientComms.PingListener;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.eclipse.paho.client.mqttv3.util.Debug;
 
@@ -461,6 +462,12 @@ public class MqttClient implements IMqttClient { //), DestinationProvider {
 	 */
 	public Debug getDebug() {
 		return (aClient.getDebug());
+	}
+	
+	public void setPingListener(PingListener pinglistener){
+		if(this.aClient != null){
+			this.aClient.setPingListener(pinglistener);
+		}
 	}
 	
 }

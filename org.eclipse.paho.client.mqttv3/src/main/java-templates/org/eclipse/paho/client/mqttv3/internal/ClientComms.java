@@ -29,6 +29,7 @@ import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttPingSender;
 import org.eclipse.paho.client.mqttv3.MqttToken;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
+import org.eclipse.paho.client.mqttv3.internal.ClientComms.PingListener;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttConnack;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttConnect;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttDisconnect;
@@ -69,6 +70,7 @@ public class ClientComms {
 	private byte	conState = DISCONNECTED;
 	private Object	conLock = new Object();  	// Used to synchronize connection state
 	private boolean	closePending = false;
+	private PingListener pinglistener;
 
 	/**
 	 * Creates a new ClientComms object, using the specified module to handle
@@ -660,8 +662,18 @@ public class ClientComms {
 			token = clientState.checkForActivity();
 		}catch(MqttException e){
 			handleRunException(e);
+			if(pinglistener != null){
+				pinglistener.onPingFail();
+			}
 		}catch(Exception e){
 			handleRunException(e);
+			if(pinglistener != null){
+				pinglistener.onPingFail();
+			}
+		}
+		
+		if(pinglistener != null){
+			pinglistener.onPingFinish(token);
 		}
 		return token;
 	}	
@@ -678,5 +690,14 @@ public class ClientComms {
 		}
 
 		shutdownConnection(null, mex);
+	}
+	public interface  PingListener{
+		public void onPingFinish(MqttToken token);
+		public void onPingFail();
+	}
+
+	public void setPingListener(PingListener pinglistener) {
+		this.pinglistener = pinglistener;
+		
 	}
 }

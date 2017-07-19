@@ -23,6 +23,7 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.eclipse.paho.client.mqttv3.internal.ClientComms;
+import org.eclipse.paho.client.mqttv3.internal.ClientComms.PingListener;
 import org.eclipse.paho.client.mqttv3.internal.ConnectActionListener;
 import org.eclipse.paho.client.mqttv3.internal.ExceptionHelper;
 import org.eclipse.paho.client.mqttv3.internal.LocalNetworkModule;
@@ -88,6 +89,7 @@ public class MqttAsyncClient implements IMqttAsyncClient { // DestinationProvide
 	protected ClientComms comms;
 	private Hashtable topics;
 	private MqttClientPersistence persistence;
+	private PingListener pinglistener;
 
 	/**
 	 * Create an MqttAsyncClient that is used to communicate with an MQTT server.
@@ -285,6 +287,9 @@ public class MqttAsyncClient implements IMqttAsyncClient { // DestinationProvide
 
 		this.persistence.open(clientId, serverURI);
 		this.comms = new ClientComms(this, this.persistence, pingSender);
+		if(comms != null){
+			comms.setPingListener(pinglistener);
+		}
 		this.persistence.close();
 		this.topics = new Hashtable();
 
@@ -667,6 +672,7 @@ public class MqttAsyncClient implements IMqttAsyncClient { // DestinationProvide
 	}
 	
 	
+	
 	/* (non-Javadoc)
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#subscribe(java.lang.String, int, java.lang.Object, org.eclipse.paho.client.mqttv3.IMqttActionListener)
 	 */
@@ -881,6 +887,13 @@ public class MqttAsyncClient implements IMqttAsyncClient { // DestinationProvide
 	 */
 	public Debug getDebug() {
 		return new Debug(clientId,comms);
+	}
+	
+	public void setPingListener(PingListener pinglistener){
+		this.pinglistener = pinglistener;
+		if(this.comms != null){
+			this.comms.setPingListener(pinglistener);
+		}
 	}
 
 }
